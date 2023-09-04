@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace WebApp_UnderTheHood.Pages
-{
+{    
     public class IndexModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;
