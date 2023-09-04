@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -42,11 +44,24 @@ namespace WebApp.Pages.Account
             if (result.Succeeded)
             {
                 var confirmationToken = await this.userManager.GenerateEmailConfirmationTokenAsync(user);
-                return Redirect(Url.PageLink(pageName: "/Account/ConfirmEmail",
-                    values: new { userId = user.Id, token = confirmationToken }));
+                var confirmationLink = Url.PageLink(pageName: "/Account/ConfirmEmail",
+                    values: new { userId = user.Id, token = confirmationToken });
 
+                var message = new MailMessage("frankliu.associates@gmail.com",
+                    user.Email,
+                    "Please confirm your email",
+                    $"Please click on this link to confirm your email address: {confirmationLink}");
 
-                //return RedirectToPage("/Account/Login");
+                using (var emailClient = new SmtpClient("smtp-relay.sendinblue.com", 587))
+                {
+                    emailClient.Credentials = new NetworkCredential(
+                        "frankliu.associates@gmail.com",
+                        "VqaRACgdU3Xp5cWB");
+
+                    await emailClient.SendMailAsync(message);
+                }
+
+                return RedirectToPage("/Account/Login");
             }
             else
             {
