@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using QRCoder;
 using WebApp.Data.Account;
 
 namespace WebApp.Pages.Account
@@ -35,6 +38,7 @@ namespace WebApp.Pages.Account
             await userManager.ResetAuthenticatorKeyAsync(user);
             var key = await userManager.GetAuthenticatorKeyAsync(user);
             this.ViewModel.Key = key;
+            this.ViewModel.QRCodeBytes = GenerateQRCodeBytes("my web app", key, user.Email);
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -57,6 +61,27 @@ namespace WebApp.Pages.Account
 
             return Page();
         }
+
+        private Byte[] GenerateQRCodeBytes(string provider, string key, string userEmail)
+        {
+            var qrCodeGenerater = new QRCodeGenerator();
+            var qrCodeData = qrCodeGenerater.CreateQrCode(
+                $"otpauth://totp/{provider}:{userEmail}?secret={key}&issuer={provider}",
+                QRCodeGenerator.ECCLevel.Q);
+            var qrCode = new QRCode(qrCodeData);
+            var qrCodeImage = qrCode.GetGraphic(20);
+
+            return BitmapToByteArray(qrCodeImage);
+        }
+
+        private Byte[] BitmapToByteArray(Bitmap image)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                return stream.ToArray();
+            }            
+        }
     }
 
     public class SetupMFAViewModel
@@ -66,6 +91,8 @@ namespace WebApp.Pages.Account
         [Required]
         [Display (Name = "Code")]
         public string SecurityCode { get; set; }
+
+        public Byte[] QRCodeBytes { get; set; }
     }
 
 }
