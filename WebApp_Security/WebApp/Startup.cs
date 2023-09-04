@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using WebApp.Data;
+using WebApp.Services;
+using WebApp.Settings;
 
 namespace WebApp
 {
@@ -52,6 +54,10 @@ namespace WebApp
                 options.LoginPath = "/Account/Login";
                 options.AccessDeniedPath = "/Account/AccessDenied";
             });
+
+            services.Configure<SmtpSetting>(Configuration.GetSection("SMTP"));
+
+            services.AddSingleton<IEmailService, EmailService>();
 
             services.AddRazorPages();
         }

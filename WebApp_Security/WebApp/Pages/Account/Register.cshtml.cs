@@ -8,16 +8,20 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using WebApp.Services;
 
 namespace WebApp.Pages.Account
 {
     public class RegisterModel : PageModel
     {
         private readonly UserManager<IdentityUser> userManager;
+        private readonly IEmailService emailService;
 
-        public RegisterModel(UserManager<IdentityUser> userManager)
+        public RegisterModel(UserManager<IdentityUser> userManager,
+            IEmailService emailService)
         {
             this.userManager = userManager;
+            this.emailService = emailService;
         }
 
         [BindProperty]
@@ -45,21 +49,12 @@ namespace WebApp.Pages.Account
             {
                 var confirmationToken = await this.userManager.GenerateEmailConfirmationTokenAsync(user);
                 var confirmationLink = Url.PageLink(pageName: "/Account/ConfirmEmail",
-                    values: new { userId = user.Id, token = confirmationToken });
+                    values: new { userId = user.Id, token = confirmationToken });                
 
-                var message = new MailMessage("frankliu.associates@gmail.com",
+                await emailService.SendAsync("frankliu.associates@gmail.com",
                     user.Email,
                     "Please confirm your email",
                     $"Please click on this link to confirm your email address: {confirmationLink}");
-
-                using (var emailClient = new SmtpClient("smtp-relay.sendinblue.com", 587))
-                {
-                    emailClient.Credentials = new NetworkCredential(
-                        "frankliu.associates@gmail.com",
-                        "VqaRACgdU3Xp5cWB");
-
-                    await emailClient.SendMailAsync(message);
-                }
 
                 return RedirectToPage("/Account/Login");
             }
