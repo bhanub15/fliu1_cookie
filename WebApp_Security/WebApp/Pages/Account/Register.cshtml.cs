@@ -8,16 +8,17 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using WebApp.Data.Account;
 using WebApp.Services;
 
 namespace WebApp.Pages.Account
 {
     public class RegisterModel : PageModel
     {
-        private readonly UserManager<IdentityUser> userManager;
+        private readonly UserManager<User> userManager;
         private readonly IEmailService emailService;
 
-        public RegisterModel(UserManager<IdentityUser> userManager,
+        public RegisterModel(UserManager<User> userManager,
             IEmailService emailService)
         {
             this.userManager = userManager;
@@ -38,10 +39,12 @@ namespace WebApp.Pages.Account
             // Validating Email address (Optional)
 
             // Create the user 
-            var user = new IdentityUser
+            var user = new User
             {
                 Email = RegisterViewModel.Email,
-                UserName = RegisterViewModel.Email
+                UserName = RegisterViewModel.Email,
+                Department = RegisterViewModel.Department,
+                Position = RegisterViewModel.Position
             };
 
             var result = await this.userManager.CreateAsync(user, RegisterViewModel.Password);
@@ -79,5 +82,11 @@ namespace WebApp.Pages.Account
         [Required]
         [DataType(dataType:DataType.Password)]
         public string Password { get; set; }
+
+        [Required]
+        public string Department { get; set; }
+
+        [Required]
+        public string Position { get; set; }
     }
 }

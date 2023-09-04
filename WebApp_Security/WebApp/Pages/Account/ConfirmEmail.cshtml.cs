@@ -10,12 +10,12 @@ namespace WebApp.Pages.Account
 {
     public class ConfirmEmailModel : PageModel
     {
-        private readonly UserManager<IdentityUser> userManager;
+        private readonly UserManager<User> userManager;
 
         [BindProperty]
         public string Message { get; set; }
 
-        public ConfirmEmailModel(UserManager<IdentityUser> userManager)
+        public ConfirmEmailModel(UserManager<User> userManager)
         {
             this.userManager = userManager;
         }
